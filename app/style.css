@@ -1,6 +1,6 @@
 #board {
-  height: 450px;
-  width: 430px;
+  height: 900px;
+  width: 830px;
   border: 1px solid black;
   padding: 10px 10px 10px 10px;
 }
@@ -19,4 +19,7 @@
 }
 .wall {
   background-color: gray;
+}
+.darkness {
+  background-color: black;
 }
