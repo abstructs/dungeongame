@@ -1,6 +1,6 @@
 #board {
   height: 900px;
-  width: 830px;
+  width: 925;
   border: 1px solid black;
   padding: 10px 10px 10px 10px;
 }
@@ -22,4 +22,10 @@
 }
 .darkness {
   background-color: black;
+}
+.border {
+  /*background-color: white;*/
+}
+.selector {
+  background-color: red;
 }
