@@ -29,18 +29,14 @@ var MainContainer = React.createClass({
   render: function() {
     return (
       <div className="container">
-        <div className="row">
-          <div id="board-container">
-          <button className="btn btn-default" onClick={this.toggleDarkness}>Toggle Darkness</button>
-            <Board darkness={this.state.darkness} />
-          </div>
+        <div id="board-container">
+        <button className="btn btn-default" onClick={this.toggleDarkness}>Toggle Darkness</button>
+          <Board darkness={this.state.darkness} />
         </div>
       </div>
     )
   }
 });
-
-  // TODO: everything v
 
 var PlayerHUD = React.createClass({
   render: function() {
@@ -127,16 +123,16 @@ var Board = React.createClass({
         $currentX = $selector.attr('id').split('').slice(2, 4).join('');
 
         if (direction === 'right') {
-          $newId = $('#' + that.formatCo($currentY) + that.formatCo($currentX, 22)); // change integer value to change distance between rooms
+          $newId = $('#' + that.formatCo($currentY) + that.formatCo($currentX, getRand(19, 22))); // change integer value to change distance between rooms
         }
         else if (direction === 'left') {
-          $newId = $('#' + that.formatCo($currentY) + that.formatCo($currentX, -22));
+          $newId = $('#' + that.formatCo($currentY) + that.formatCo($currentX, getRand(-19, -22)));
         }
         else if (direction === 'down'){
-          $newId = $('#' + that.formatCo($currentY, 17) + that.formatCo($currentX));
+          $newId = $('#' + that.formatCo($currentY, getRand(17, 20)) + that.formatCo($currentX));
         }
         else if (direction === 'up') {
-          $newId = $('#' + that.formatCo($currentY, -17) + that.formatCo($currentX));
+          $newId = $('#' + that.formatCo($currentY, getRand(-17, -20)) + that.formatCo($currentX));
         }
         else {
           console.log("direction isn't in database!");
@@ -614,7 +610,7 @@ var Board = React.createClass({
     return (
       <div>
         <PlayerHUD health={this.state.health} weapon={this.state.weapon} experience={this.state.experience} maxDamage={this.state.maxDamage} minDamage={this.state.minDamage} playerLevel={this.state.playerLevel}/>
-        
+
         <div id="board">
           {this.createBoard(this.state.boardArray)}
         </div>
