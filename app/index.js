@@ -30,10 +30,9 @@ var MainContainer = React.createClass({
     return (
       <div className="container">
         <div className="row">
-          <PlayerHUD />
           <div id="board-container">
           <button className="btn btn-default" onClick={this.toggleDarkness}>Toggle Darkness</button>
-            <Board darkness={this.state.darkness}/>
+            <Board darkness={this.state.darkness} />
           </div>
         </div>
       </div>
@@ -47,7 +46,13 @@ var PlayerHUD = React.createClass({
   render: function() {
     return (
       <div>
-        <h4></h4>
+        <h4>
+          <span className='playerStats'>Health: {this.props.health}</span>
+          <span className='playerStats'>Weapon: {this.props.weapon}</span>
+          <span className='playerStats'>Damage: [{this.props.minDamage} ~ {this.props.maxDamage}]</span>
+          <span className='playerStats'>Experience: {this.props.experience}</span>
+          <span className='playerStats'>Level: {this.props.playerLevel}</span>
+        </h4>
       </div>
     )
   }
@@ -57,7 +62,15 @@ var Board = React.createClass({
   getInitialState: function() {
     return {
       boardArray: [],
-      roomArray: []
+      roomArray: [],
+      playerLevel: 1,
+      weapon: 'Fist',
+      health: 100,
+      enemyCount: 0,
+      healthAmount: 15, // how much health green blocks restore
+      maxDamage: 15,
+      minDamage: 10,
+      experience: 0
     }
   },
   componentDidMount: function() {
@@ -65,7 +78,7 @@ var Board = React.createClass({
     this.createBoardArray();
     this.addListener();
     $(function(){
-      $('#1030').addClass('current');
+      $('#2827').addClass('current');
       $('.box').addClass('wall');
       that.addDarkness($('#2203'));
       that.addRoom($('#2222'));
@@ -96,6 +109,7 @@ var Board = React.createClass({
         board.push({coordinates});
       }
     }
+//    board.push({y: 88, x: 00}); //one short for board
     this.setState({ // sets the state of the boardArray to the board full of coordinates
       boardArray: board
     });
@@ -135,25 +149,19 @@ var Board = React.createClass({
         return $newId;
       }
 
-      //TODO: make loop to randomly generate rooms
-
       that.addRoom(directions($('.border'), 'right'));
-      // that.addRoom(directions($('.border'), 'right'));
-      // that.addRoom(directions($('.border'), 'down'));
-      // that.addRoom(directions($('.border'), 'down'));
-      // that.addRoom(directions($('.border'), 'down'));
-      // that.addRoom(directions($('.border'), 'left'));
-      // that.addRoom(directions($('.border'), 'down'));
-      // that.addRoom(directions($('.border'), 'left'));
-      // that.addRoom(directions($('.border'), 'up'));
-      // that.addRoom(directions($('.border'), 'left'));
-      // that.addRoom(directions($('.border'), 'up'));
-
-      // TODO: add percent based pathway generation
+      that.addRoom(directions($('.border'), 'right'));
+      that.addRoom(directions($('.border'), 'down'));
+      that.addRoom(directions($('.border'), 'down'));
+      that.addRoom(directions($('.border'), 'down'));
+      that.addRoom(directions($('.border'), 'left'));
+      that.addRoom(directions($('.border'), 'left'));
+      that.addRoom(directions($('.border'), 'up'));
+      that.addRoom(directions($('.border'), 'right'));
+      that.addRoom(directions($('.border'), 'up'));
 
       allBorders.map(function($border) {
         var count = 0;
-        var possibleDirections = []; // TODO: find a way to check if two rooms are already connected
         var pathLogic = function($selector, dir) {
           if (that.canCreatePath($selector, dir)) {
             if (count !== 1) {
@@ -165,29 +173,51 @@ var Board = React.createClass({
                 that.createPath(that.canCreatePath($selector, dir), dir);
               }
             }
-            possibleDirections.push(dir);
           }
-
         };
         $(function(){
           // TODO: check these values randomly
           pathLogic($border, 'right');
+          pathLogic($border, 'down');
           pathLogic($border, 'left');
           pathLogic($border, 'up');
-          pathLogic($border, 'down');
-
-          // if (that.canCreatePath($border, 'up')) {
-          //   pathCreated = true;
-          //   possibleDirections.push('up');
-          // }
-          // if (that.canCreatePath($border, 'down')) {
-          //   pathCreated = true;
-          //   possibleDirections.push('down');
-          // }
-          // possibleDirections.map(function(){
-          //
-          // });
         });
+      });
+
+      $(function(){
+        //add enemies and weapons
+        var $fl = $('.floor');
+
+        for (var i = 0; i < 15; i++) {
+          var random = Math.floor(Math.random() * $fl.length);
+
+          if (i <= 4) { // spawns 5 level 1 enemies
+            $fl.eq(random % $fl.length).addClass('enemy1 100');
+          }
+          else if (i <= 9) { // spawns 5 level 2 enemies
+            $fl.eq(random % $fl.length).addClass('enemy2 120');
+          }
+          else if (i <= 12) { // spawns 3 level 3 enemies
+            $fl.eq(random % $fl.length).addClass('enemy3 150');
+          }
+          else if (i <= 15) { // spawns 3 level 4 enemies
+            $fl.eq(random % $fl.length).addClass('enemy4 200');
+          }
+        }
+
+        for (var i = 0; i < 5; i++) {
+          var random = Math.floor(Math.random() * $fl.length);
+          $fl.eq(random % $fl.length).addClass('weapon');
+        }
+
+        for (var i = 0; i < 10; i++) {
+          var random = Math.floor(Math.random() * $fl.length);
+          $fl.eq(random % $fl.length).addClass('health');
+        }
+
+        for (var i = 0; i < 22; i++) { // remove unneccessary walls (save space)
+          $('.row' + i.toString()).remove();
+        }
       });
     });
   },
@@ -233,28 +263,35 @@ var Board = React.createClass({
           return true
         }
       }
-      if (direction == 'up' || direction == 'down') {
+      else if (direction == 'up' || direction == 'down') {
         $nextSelector = $('#' + that.formatCo(y) + that.formatCo(x, count++));
         if ($nextSelector.hasClass('path')) {
           stillRoom = false;
           return true
         }
       }
+      if (control == 20) {
+        stillRoom = false;
+        return false;
+      }
       else {
-        if (control == 20) {
-          stillRoom = false;
-          return false;
-        }
         control++;
       }
     }
   },
   createBoard: function(arr) {
     if (arr) {
-      var count = 1;
+      var count = 1,
+      rowCount = 0;
       return arr.map(function(item){ // maps out each element of the boardArray which contains coordinates, returns a component box for each element
-        var boxCo = ('0' + item.coordinates.y).slice(-2) + ('0' + item.coordinates.x).slice(-2); // formats the coordinates so it always contains two digits, three digits not supported
-        return <Box key={count++} boxCo={boxCo} />
+        if (('0' + item.coordinates.x).slice(-2) === '00') {
+          var boxCo = ('0' + item.coordinates.y).slice(-2) + ('0' + item.coordinates.x).slice(-2); // formats the coordinates so it always contains two digits, three digits not supported
+          return <Box key={count++} boxCo={boxCo} rowCount={rowCount++} />
+        }
+        else {
+          var boxCo = ('0' + item.coordinates.y).slice(-2) + ('0' + item.coordinates.x).slice(-2); // formats the coordinates so it always contains two digits, three digits not supported
+          return <Box key={count++} boxCo={boxCo} rowCount={rowCount}/>
+        }
       });
     }
   },
@@ -336,6 +373,9 @@ var Board = React.createClass({
     };
     $(function(){
       var randNum = getRand(5, 7);
+      if (that.hasPath($target, direction)) {
+        notComplete = false;
+      }
       while (notComplete) {
         if (direction == 'left') { $wall = $('#' + that.formatCo(y, randNum) + that.formatCo(x, count--)) }
         else if (direction == 'right') { $wall = $('#' + that.formatCo(y, randNum) + that.formatCo(x, count++)) }
@@ -359,6 +399,7 @@ var Board = React.createClass({
       x = parseInt($currentX),
       nextY = y,
       nextX = x,
+      enemyCount = 0,
       getRand = function(min, max) {
         return Math.floor(Math.random() * (max - min) + min);
       };
@@ -369,24 +410,184 @@ var Board = React.createClass({
       columns = getRand(10, 20);
       $('.border').removeClass('border');
       $target.addClass('border');
-        for (var i = 0; i < rows; i++) { // changes rows
-          for (var j = 0; j < columns; j++) { // changes columns
-            nextX = j;
-            // creates the room
-            $('#' + that.formatCo(nextY) + that.formatCo(x, nextX)).removeClass('wall');
-          }
-          nextY++;
+      for (var i = 0; i < rows; i++) { // changes rows
+        for (var j = 0; j < columns; j++) { // changes columns
+          nextX = j;
+          // creates the room
+          var $newBox = $('#' + that.formatCo(nextY) + that.formatCo(x, nextX));
+          $newBox.removeClass('wall').addClass('floor');
+          var rand = getRand(1, 150);
+          // if (rand === 1) {
+          //   enemyCount++;
+          //   $('#' + that.formatCo(nextY) + that.formatCo(x, nextX)).addClass('enemy');
+          // }
         }
+        nextY++;
+      }
+      enemyCount += that.state.enemyCount;
+      that.setState({
+        enemyCount: enemyCount
+      });
     });
   },
   addListener: function() {
-    var that = this;
-    var manageCo = function(selector) { // removes and adds currents
-      if (selector.length !== 0 && !selector.hasClass('wall')) { //stops from going off map
+    var that = this,
+    getRand = function(min, max) {
+      return Math.floor(Math.random() * (max - min) + min);
+    },
+    newWeapon = function(weapon) {
+      var newDamage = that.state.maxDamage += 15;
+      that.setState({
+        maxDamage: newDamage,
+        minDamage: newDamage - 10
+      });
+      if (weapon == 'Fist') {
+        return 'Dagger'
+      }
+      else if (weapon === 'Dagger') {
+        return 'Sword'
+      }
+      else if (weapon === 'Sword') {
+        return 'Great Sword'
+      }
+      else if (weapon === 'Great Sword') {
+        return 'Scythe'
+      }
+      else if (weapon === 'Scythe') {
+        return 'Death'
+      }
+    },
+    manageEnemyHealth = function(selector, level) {
+      var boxClasses = selector.attr('class').split(' '); // split enemy element
+      var health = parseInt(boxClasses[boxClasses.length - 1]); // get last element from element (which is the health)
+
+      health -= getRand(that.state.minDamage, that.state.maxDamage); // substract player damage from enemies current health
+      selector.attr('class', 'box floor enemy' + level.toString() + ' ' + health.toString()); // add the new health to enemy element
+      if (health <= 0) {
+        selector.removeClass('enemy' + level);
+        playerExperience(level);
+        return; // makes it so if the player kills the enemy he wont take damage (our hero is naturaly fast)
+      };
+      // do damage to the player
+      var playerHealth = that.state.health -= damageToPlayer(level);
+      that.setState({
+        health: playerHealth
+      })
+    },
+    playerLevel = function(expAmount, pLvl) {
+      var playerExp = that.state.experience;
+      if (pLvl === 1) {
+        if (expAmount >= 50) {
+          var newDamage = that.state.maxDamage += 15;
+          that.setState({
+            playerLevel: 2,
+            maxDamage: newDamage,
+            minDamage: newDamage - 10
+          });
+        }
+      }
+      if (pLvl === 2) {
+        if (expAmount >= 100) {
+          var newDamage = that.state.maxDamage += 15;
+          that.setState({
+            playerLevel: 3,
+            maxDamage: newDamage,
+            minDamage: newDamage - 10
+          });
+        }
+      }
+      if (pLvl === 3) {
+        if (expAmount >= 200) {
+          var newDamage = that.state.maxDamage += 15;
+          that.setState({
+            playerLevel: 4,
+            maxDamage: newDamage,
+            minDamage: newDamage - 10
+          });
+        }
+      }
+      if (pLvl === 4) {
+        if (expAmount >= 250) {
+          var newDamage = that.state.maxDamage += 15;
+          that.setState({
+            playerLevel: 5,
+            maxDamage: newDamage,
+            minDamage: newDamage - 10
+          });
+        }
+      }
+    },
+    playerExperience = function(level) {
+      var pExp = that.state.experience
+      if (level == 1) {
+        pExp += 10;
+      }
+      else if (level == 2) {
+        pExp += 25
+      }
+      else if (level == 3) {
+        pExp += 50
+      }
+      else if (level == 4) {
+        pExp += 75
+      }
+      playerLevel(pExp, that.state.playerLevel)
+      that.setState({
+        experience: pExp
+      });
+    },
+    damageToPlayer = function(level) {
+      if (level == 1) {
+        return getRand(3, 7)
+      }
+      else if (level == 2) {
+        return getRand(7, 10)
+      }
+      else if (level == 3) {
+        return getRand(10, 15)
+      }
+      else if (level == 4) {
+        return getRand(15, 20)
+      }
+      else if (level == 5) {
+        return getRand(20, 30)
+      }
+    },
+    manageCo = function(selector) { // removes and adds currents
+      if (selector.length !== 0 && !selector.hasClass('wall') && !selector.hasClass('enemy1') && !selector.hasClass('enemy2') && !selector.hasClass('enemy3') && !selector.hasClass('enemy4')) { //stops from going off map
         $('.current').removeClass('current');
         selector.addClass('current');
         if (that.props.darkness === true) { that.addDarkness(selector) }
         else if (that.props.darkness === false) { $('.box').removeClass('darkness') }
+      }
+      if (selector.hasClass('health')) {
+        var newHealth = that.state.health += that.state.healthAmount
+        that.setState({
+          health: newHealth
+        });
+        selector.removeClass('health')
+      }
+      else if (selector.hasClass('weapon')) {
+        var oldWeapon = that.state.weapon
+        that.setState({
+          weapon: newWeapon(oldWeapon)
+        });
+        selector.removeClass('weapon');
+      }
+      else if (selector.hasClass('enemy1')) {
+        manageEnemyHealth(selector, 1);
+      }
+      else if (selector.hasClass('enemy2')) {
+        manageEnemyHealth(selector, 2);
+      }
+      else if (selector.hasClass('enemy3')) {
+        manageEnemyHealth(selector, 3);
+      }
+      else if (selector.hasClass('enemy4')) {
+        manageEnemyHealth(selector, 4);
+      }
+      else if (selector.hasClass('enemy5')) {
+        manageEnemyHealth(selector, 5);
       }
     }
     window.onkeydown = function(e) {
@@ -411,8 +612,12 @@ var Board = React.createClass({
   },
   render: function() {
     return (
-      <div id="board">
-        {this.createBoard(this.state.boardArray)}
+      <div>
+        <PlayerHUD health={this.state.health} weapon={this.state.weapon} experience={this.state.experience} maxDamage={this.state.maxDamage} minDamage={this.state.minDamage} playerLevel={this.state.playerLevel}/>
+        
+        <div id="board">
+          {this.createBoard(this.state.boardArray)}
+        </div>
       </div>
     )
   }
@@ -420,7 +625,7 @@ var Board = React.createClass({
 var Box = React.createClass({
   render: function() {
     return (
-      <div className="box" id={this.props.boxCo}>
+      <div className={'box ' + 'row' + this.props.rowCount} id={this.props.boxCo}>
       </div>
     )
   }

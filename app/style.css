@@ -1,8 +1,14 @@
 #board {
-  height: 900px;
-  width: 925;
+  height: 800px;
+  width: 925px;
   border: 1px solid black;
   padding: 10px 10px 10px 10px;
+}
+body {
+  background-color: black;
+}
+.floor, .path {
+  background-color: white;
 }
 .box {
   height: 10px;
@@ -14,18 +20,43 @@
   margin-top: 100px;
   margin-left: 200px;
 }
+.playerStats {
+  color: white;
+  margin-left: 15px;
+  margin-right: 15px;
+  text-align: center;
+}
 .current {
-  background-color: red;
+  background-color: blue;
+}
+.weapon {
+  background-color: gold;
 }
 .wall {
   background-color: gray;
 }
-.darkness {
-  background-color: black;
+.health {
+  background-color: green;
 }
 .border {
   /*background-color: white;*/
 }
 .selector {
   background-color: red;
+}
+.enemy1 {
+  background-color: #FFB6C1;
+}
+.enemy2 {
+  background-color: #CD6889	;
+}
+.enemy3 {
+  background-color: #8B2252;
+}
+.enemy4 {
+  background-color: #DC143C;
+}
+
+.darkness {
+  background-color: black;
 }
