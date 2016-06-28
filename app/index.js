@@ -74,11 +74,12 @@ var Board = React.createClass({
     this.createBoardArray();
     this.addListener();
     $(function(){
-      $('#2827').addClass('current');
+      // $('#2827').addClass('current');
       $('.box').addClass('wall');
       that.addDarkness($('#2203'));
       that.addRoom($('#2222'));
       that.createRoomArray();
+      // add player to random square
     });
   },
   shouldComponentUpdate: function(nextProps) {
@@ -110,6 +111,51 @@ var Board = React.createClass({
       boardArray: board
     });
   },
+  spawnElements: function() {
+    var that = this;
+    $(function(){
+      //add enemies and weapons
+
+      for (var i = 0; i < 15; i++) {
+        var $fl = $('.canSpawn');
+        var random = Math.floor(Math.random() * $fl.length);
+
+        if (i <= 4) { // spawns 5 level 1 enemies
+          $fl.eq(random % $fl.length).addClass('enemy1 100').removeClass('canSpawn');
+        }
+        else if (i <= 9) { // spawns 5 level 2 enemies
+          $fl.eq(random % $fl.length).addClass('enemy2 120').removeClass('canSpawn');
+        }
+        else if (i <= 12) { // spawns 3 level 3 enemies
+          $fl.eq(random % $fl.length).addClass('enemy3 150').removeClass('canSpawn');
+        }
+        else if (i <= 15) { // spawns 3 level 4 enemies
+          $fl.eq(random % $fl.length).addClass('enemy4 200').removeClass('canSpawn');
+        }
+      }
+
+      for (var i = 0; i < 5; i++) {
+        var $fl = $('.canSpawn');
+        var random = Math.floor(Math.random() * $fl.length);
+        $fl.eq(random % $fl.length).addClass('weapon').removeClass('canSpawn');
+      }
+
+      for (var i = 0; i < 10; i++) {
+        var $fl = $('.canSpawn');
+        var random = Math.floor(Math.random() * $fl.length);
+        $fl.eq(random % $fl.length).addClass('health').removeClass('canSpawn');
+      }
+
+      for (var i = 0; i < 22; i++) { // remove unneccessary walls (save space)
+        $('.row' + i.toString()).remove();
+      }
+      //$('#2827').addClass('current');
+      var $fl = $('.canSpawn');
+      var random = Math.floor(Math.random() * $fl.length);
+      $fl.eq(random % $fl.length).addClass('current');
+      that.centerPlayer();
+    });
+  },
   createRoomArray: function() {
     var that = this,
     getRand = function(min, max) {
@@ -123,10 +169,10 @@ var Board = React.createClass({
         $currentX = $selector.attr('id').split('').slice(2, 4).join('');
 
         if (direction === 'right') {
-          $newId = $('#' + that.formatCo($currentY) + that.formatCo($currentX, getRand(19, 22))); // change integer value to change distance between rooms
+          $newId = $('#' + that.formatCo($currentY) + that.formatCo($currentX, getRand(20, 22))); // change integer value to change distance between rooms
         }
         else if (direction === 'left') {
-          $newId = $('#' + that.formatCo($currentY) + that.formatCo($currentX, getRand(-19, -22)));
+          $newId = $('#' + that.formatCo($currentY) + that.formatCo($currentX, getRand(-20, -22)));
         }
         else if (direction === 'down'){
           $newId = $('#' + that.formatCo($currentY, getRand(17, 20)) + that.formatCo($currentX));
@@ -179,42 +225,7 @@ var Board = React.createClass({
           pathLogic($border, 'up');
         });
       });
-
-      $(function(){
-        //add enemies and weapons
-        var $fl = $('.floor');
-
-        for (var i = 0; i < 15; i++) {
-          var random = Math.floor(Math.random() * $fl.length);
-
-          if (i <= 4) { // spawns 5 level 1 enemies
-            $fl.eq(random % $fl.length).addClass('enemy1 100');
-          }
-          else if (i <= 9) { // spawns 5 level 2 enemies
-            $fl.eq(random % $fl.length).addClass('enemy2 120');
-          }
-          else if (i <= 12) { // spawns 3 level 3 enemies
-            $fl.eq(random % $fl.length).addClass('enemy3 150');
-          }
-          else if (i <= 15) { // spawns 3 level 4 enemies
-            $fl.eq(random % $fl.length).addClass('enemy4 200');
-          }
-        }
-
-        for (var i = 0; i < 5; i++) {
-          var random = Math.floor(Math.random() * $fl.length);
-          $fl.eq(random % $fl.length).addClass('weapon');
-        }
-
-        for (var i = 0; i < 10; i++) {
-          var random = Math.floor(Math.random() * $fl.length);
-          $fl.eq(random % $fl.length).addClass('health');
-        }
-
-        for (var i = 0; i < 22; i++) { // remove unneccessary walls (save space)
-          $('.row' + i.toString()).remove();
-        }
-      });
+      that.spawnElements();
     });
   },
   findWall: function($target, dir) {
@@ -411,7 +422,7 @@ var Board = React.createClass({
           nextX = j;
           // creates the room
           var $newBox = $('#' + that.formatCo(nextY) + that.formatCo(x, nextX));
-          $newBox.removeClass('wall').addClass('floor');
+          $newBox.removeClass('wall').addClass('floor canSpawn');
           var rand = getRand(1, 150);
           // if (rand === 1) {
           //   enemyCount++;
@@ -424,6 +435,20 @@ var Board = React.createClass({
       that.setState({
         enemyCount: enemyCount
       });
+    });
+  },
+  centerPlayer: function(direction) {
+    $(function(){
+      if (direction == 'right' || direction == 'left') {
+        $('html,body').scrollLeft($('.current').position().left - 150);
+      }
+      else if (direction == 'up' || direction == 'down'){
+        $('html,body').scrollTop($('.current').position().top - 100);
+      }
+      else {
+        var elementId = $('.current').attr('id');
+        window.location.hash = elementId;
+      }
     });
   },
   addListener: function() {
@@ -549,10 +574,14 @@ var Board = React.createClass({
         return getRand(20, 30)
       }
     },
-    manageCo = function(selector) { // removes and adds currents
+    manageCo = function(selector, direction) { // removes and adds currents
       if (selector.length !== 0 && !selector.hasClass('wall') && !selector.hasClass('enemy1') && !selector.hasClass('enemy2') && !selector.hasClass('enemy3') && !selector.hasClass('enemy4')) { //stops from going off map
         $('.current').removeClass('current');
         selector.addClass('current');
+
+        // TODO: add scrolling logic
+        that.centerPlayer(direction);
+
         if (that.props.darkness === true) { that.addDarkness(selector) }
         else if (that.props.darkness === false) { $('.box').removeClass('darkness') }
       }
@@ -599,10 +628,10 @@ var Board = React.createClass({
           right: $('#' + that.formatCo(y) + that.formatCo(x, 1))
         }
         // find the surrounding elements (also appends a 0 to the beginning of an element less that 10)
-        if (e.keyCode == 37) e.preventDefault(), manageCo(directions.left); // left
-        else if (e.keyCode == 38) e.preventDefault(), manageCo(directions.up); // up
-        else if (e.keyCode == 39) e.preventDefault(), manageCo(directions.right); // right
-        else if (e.keyCode == 40) e.preventDefault(), manageCo(directions.down); // down
+        if (e.keyCode == 37) e.preventDefault(), manageCo(directions.left, 'left'); // left
+        else if (e.keyCode == 38) e.preventDefault(), manageCo(directions.up, 'up'); // up
+        else if (e.keyCode == 39) e.preventDefault(), manageCo(directions.right, 'right'); // right
+        else if (e.keyCode == 40) e.preventDefault(), manageCo(directions.down, 'down'); // down
       }
     }
   },
