@@ -12,6 +12,9 @@ body {
 .floor, .path {
   background-color: white;
 }
+.enemy5 {
+  background-color: purple;
+}
 .box {
   height: 10px;
   width: 10px;

@@ -70,11 +70,13 @@ var Board = React.createClass({
     }
   },
   componentDidMount: function() {
+    this.startGame();
+  },
+  startGame: function() {
     var that = this;
     this.createBoardArray();
     this.addListener();
     $(function(){
-      // $('#2827').addClass('current');
       $('.box').addClass('wall');
       that.addDarkness($('#2203'));
       that.addRoom($('#2222'));
@@ -149,10 +151,11 @@ var Board = React.createClass({
       for (var i = 0; i < 22; i++) { // remove unneccessary walls (save space)
         $('.row' + i.toString()).remove();
       }
-      //$('#2827').addClass('current');
+      var bossRand = Math.floor(Math.random() * $fl.length);
+      $fl.eq(bossRand % $fl.length).addClass('enemy5 500').removeClass('canSpawn');
       var $fl = $('.canSpawn');
-      var random = Math.floor(Math.random() * $fl.length);
-      $fl.eq(random % $fl.length).addClass('current');
+      var playerRand = Math.floor(Math.random() * $fl.length);
+      $fl.eq(playerRand % $fl.length).addClass('current');
       that.centerPlayer();
     });
   },
@@ -442,14 +445,29 @@ var Board = React.createClass({
       if (direction == 'right' || direction == 'left') {
         $('html,body').scrollLeft($('.current').position().left - 150);
       }
-      else if (direction == 'up' || direction == 'down'){
+      else if (direction == 'up' || direction == 'down') {
         $('html,body').scrollTop($('.current').position().top - 100);
       }
       else {
         var elementId = $('.current').attr('id');
-        window.location.hash = elementId;
+        window.location.hash = '#'
+        window.location.hash = '#' + elementId;
+        setTimeout(function(){
+          
+        }, 2000);
       }
     });
+  },
+  loseGame: function() {
+    alert('Sorry, you lose!');
+    this.restartGame();
+  },
+  restartGame: function() {
+    window.location.href = '';
+  },
+  winGame: function() {
+    alert('YOU WIN!');
+    this.restartGame();
   },
   addListener: function() {
     var that = this,
@@ -491,9 +509,14 @@ var Board = React.createClass({
       };
       // do damage to the player
       var playerHealth = that.state.health -= damageToPlayer(level);
-      that.setState({
-        health: playerHealth
-      })
+      if (playerHealth > 0) {
+        that.setState({
+          health: playerHealth
+        })
+      }
+      else {
+        that.loseGame();
+      }
     },
     playerLevel = function(expAmount, pLvl) {
       var playerExp = that.state.experience;
