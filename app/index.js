@@ -8,7 +8,7 @@ require('./style.css');
 var MainContainer = React.createClass({
   getInitialState: function() {
     return {
-      darkness: false
+      darkness: false // has to initialize as false
     }
   },
   componentDidMount: function() {
@@ -191,11 +191,10 @@ var Board = React.createClass({
         }
         $selector.removeClass('border');
         $newId.addClass('border');
-        // console.log('added new border');
         allBorders.push($('.border'));
         return $newId;
       }
-
+      // adds all the rooms that make up the dungeon, works by spawning rooms in the direction of the room with the class of border on its corner
       that.addRoom(directions($('.border'), 'right'));
       that.addRoom(directions($('.border'), 'right'));
       that.addRoom(directions($('.border'), 'down'));
@@ -209,13 +208,16 @@ var Board = React.createClass({
 
       allBorders.map(function($border) {
         var count = 0;
+        // checks if it can create pathways between rooms
         var pathLogic = function($selector, dir) {
           if (that.canCreatePath($selector, dir)) {
             if (count !== 1) {
+              // creates a pathway if there isnt at least one pathway connected to that room
               that.createPath(that.canCreatePath($selector, dir), dir);
               count++;
             }
             else {
+              // if theres already a pathway the theres a 50% chance of a room spawning
               if (getRand(0, 2) === 1) {
                 that.createPath(that.canCreatePath($selector, dir), dir);
               }
@@ -223,7 +225,7 @@ var Board = React.createClass({
           }
         };
         $(function(){
-          // TODO: check these values randomly
+          // the order in which the directions are specified determines the priority of which direction to spawn pathways in
           pathLogic($border, 'right');
           pathLogic($border, 'down');
           pathLogic($border, 'left');
