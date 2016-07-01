@@ -30,7 +30,7 @@ var MainContainer = React.createClass({
     return (
       <div className="container">
         <div id="board-container">
-        <button className="btn btn-default" onClick={this.toggleDarkness}>Toggle Darkness</button>
+        <button className="btn btn-default darknessButton" onClick={this.toggleDarkness}>Toggle Darkness</button>
           <Board darkness={this.state.darkness} />
         </div>
       </div>
@@ -41,7 +41,8 @@ var MainContainer = React.createClass({
 var PlayerHUD = React.createClass({
   render: function() {
     return (
-      <div>
+      <div id="playerHUD">
+      <h1>React Roguelike</h1>
         <h4>
           <span className='playerStats'>Health: {this.props.health}</span>
           <span className='playerStats'>Weapon: {this.props.weapon}</span>
@@ -148,7 +149,7 @@ var Board = React.createClass({
         $fl.eq(random % $fl.length).addClass('health').removeClass('canSpawn');
       }
 
-      for (var i = 0; i < 22; i++) { // remove unneccessary walls (save space)
+      for (var i = 0; i < 20; i++) { // remove unneccessary walls (save space)
         $('.row' + i.toString()).remove();
       }
       var bossRand = Math.floor(Math.random() * $fl.length);
@@ -453,8 +454,11 @@ var Board = React.createClass({
         window.location.hash = '#'
         window.location.hash = '#' + elementId;
         setTimeout(function(){
-          
-        }, 2000);
+          for (var i = 0; i < 3; i++) {
+            $('html,body').scrollLeft($('.current').position().left - 150);
+            $('html,body').scrollTop($('.current').position().top - 100);
+          }
+        }, 1);
       }
     });
   },
@@ -493,7 +497,7 @@ var Board = React.createClass({
         return 'Scythe'
       }
       else if (weapon === 'Scythe') {
-        return 'Death'
+        return 'Katana'
       }
     },
     manageEnemyHealth = function(selector, level) {
@@ -530,7 +534,7 @@ var Board = React.createClass({
           });
         }
       }
-      if (pLvl === 2) {
+      else if (pLvl === 2) {
         if (expAmount >= 100) {
           var newDamage = that.state.maxDamage += 15;
           that.setState({
@@ -540,7 +544,7 @@ var Board = React.createClass({
           });
         }
       }
-      if (pLvl === 3) {
+      else if (pLvl === 3) {
         if (expAmount >= 200) {
           var newDamage = that.state.maxDamage += 15;
           that.setState({
@@ -550,7 +554,7 @@ var Board = React.createClass({
           });
         }
       }
-      if (pLvl === 4) {
+      else if (pLvl === 4) {
         if (expAmount >= 250) {
           var newDamage = that.state.maxDamage += 15;
           that.setState({
@@ -562,7 +566,7 @@ var Board = React.createClass({
       }
     },
     playerExperience = function(level) {
-      var pExp = that.state.experience
+      var pExp = that.state.experience;
       if (level == 1) {
         pExp += 10;
       }
@@ -598,7 +602,7 @@ var Board = React.createClass({
       }
     },
     manageCo = function(selector, direction) { // removes and adds currents
-      if (selector.length !== 0 && !selector.hasClass('wall') && !selector.hasClass('enemy1') && !selector.hasClass('enemy2') && !selector.hasClass('enemy3') && !selector.hasClass('enemy4')) { //stops from going off map
+      if (selector.length !== 0 && !selector.hasClass('wall') && !selector.hasClass('enemy1') && !selector.hasClass('enemy2') && !selector.hasClass('enemy3') && !selector.hasClass('enemy4') && !selector.hasClass('enemy5')) { //stops from going off map
         $('.current').removeClass('current');
         selector.addClass('current');
 
@@ -662,7 +666,6 @@ var Board = React.createClass({
     return (
       <div>
         <PlayerHUD health={this.state.health} weapon={this.state.weapon} experience={this.state.experience} maxDamage={this.state.maxDamage} minDamage={this.state.minDamage} playerLevel={this.state.playerLevel}/>
-
         <div id="board">
           {this.createBoard(this.state.boardArray)}
         </div>
