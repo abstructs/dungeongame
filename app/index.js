@@ -43,6 +43,7 @@ var PlayerHUD = React.createClass({
     return (
       <div id="playerHUD">
       <h1>React Roguelike</h1>
+      <p>Find and defeat the boss</p>
         <h4>
           <span className='playerStats'>Health: {this.props.health}</span>
           <span className='playerStats'>Weapon: {this.props.weapon}</span>
@@ -149,7 +150,7 @@ var Board = React.createClass({
         $fl.eq(random % $fl.length).addClass('health').removeClass('canSpawn');
       }
 
-      for (var i = 0; i < 20; i++) { // remove unneccessary walls (save space)
+      for (var i = 0; i < 19; i++) { // remove unneccessary walls (save space)
         $('.row' + i.toString()).remove();
       }
       var bossRand = Math.floor(Math.random() * $fl.length);
@@ -447,7 +448,7 @@ var Board = React.createClass({
         $('html,body').scrollLeft($('.current').position().left - 150);
       }
       else if (direction == 'up' || direction == 'down') {
-        $('html,body').scrollTop($('.current').position().top - 100);
+        $('html,body').scrollTop($('.current').position().top - 115);
       }
       else {
         var elementId = $('.current').attr('id');
@@ -456,7 +457,7 @@ var Board = React.createClass({
         setTimeout(function(){
           for (var i = 0; i < 3; i++) {
             $('html,body').scrollLeft($('.current').position().left - 150);
-            $('html,body').scrollTop($('.current').position().top - 100);
+            $('html,body').scrollTop($('.current').position().top - 115);
           }
         }, 1);
       }
@@ -507,6 +508,9 @@ var Board = React.createClass({
       health -= getRand(that.state.minDamage, that.state.maxDamage); // substract player damage from enemies current health
       selector.attr('class', 'box floor enemy' + level.toString() + ' ' + health.toString()); // add the new health to enemy element
       if (health <= 0) {
+        if (level === 5) {
+          that.winGame()
+        }
         selector.removeClass('enemy' + level);
         playerExperience(level);
         return; // makes it so if the player kills the enemy he wont take damage (our hero is naturaly fast)
